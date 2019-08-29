@@ -2,4 +2,6 @@
 
 ## Installation
 
-git clone
+## Tests
+
+## Use as template
