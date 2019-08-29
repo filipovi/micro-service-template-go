@@ -1,4 +1,4 @@
-module ma-residence/go-micro-template
+module filipovi/go-micro-template
 
 go 1.12
 

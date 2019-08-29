@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"ma-residence/go-micro-template/mrapiclient"
+	"filipovi/go-micro-template/api/mrapi"
 
 	"github.com/urfave/negroni"
 	"goji.io"
@@ -17,7 +17,8 @@ import (
 
 // Env is the container
 type Env struct {
-	client mrapiclient.MrAPIClient
+	client mrapi.Client
+	apiURL string
 }
 
 func send(content []byte, contentType string, status int, w http.ResponseWriter) {
@@ -32,19 +33,19 @@ func (env *Env) handleIndexRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func (env *Env) handleRoleRequest(w http.ResponseWriter, r *http.Request) {
-	resp, err := env.client.Get("http://dev.api.ensembl.fr/roles")
+	response, err := env.client.Get(env.apiURL + "/roles")
 	if err != nil {
 		panic(err)
 	}
-	defer resp.Body.Close()
 
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := ioutil.ReadAll(response.Body)
+	defer response.Body.Close()
 
 	send([]byte(string(body)), "application/json", http.StatusOK, w)
 }
 
 func initialize() (*Env, error) {
-	client, err := mrapiclient.New(
+	client, err := mrapi.New(
 		os.Getenv("CLIENT_ID"),
 		os.Getenv("CLIENT_SECRET"),
 		os.Getenv("CLIENT_URL"),
@@ -54,7 +55,7 @@ func initialize() (*Env, error) {
 	}
 	log.Println("MR API configured!")
 
-	return &Env{client: *client}, nil
+	return &Env{client: *client, apiURL: os.Getenv("CLIENT_URL")}, nil
 }
 
 func main() {
